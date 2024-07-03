@@ -117,35 +117,52 @@
     }
 
     function onLineLoginCallback(code) {
-      var xhr = new XMLHttpRequest();
-      var clientId = '2005527635';
-      var clientSecret = 'b2baccf304669ec1298167666b177eb1';
-      var redirectUri = encodeURIComponent(window.location.href);
+  var xhr = new XMLHttpRequest();
+  var clientId = '2005527635';
+  var clientSecret = 'b2baccf304669ec1298167666b177eb1';
+  var redirectUri = window.location.href.split('?')[0];
 
-      xhr.open("POST", "https://api.line.me/oauth2/v2.1/token", true);
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          var tokenResponse = JSON.parse(xhr.responseText);
-          getUserProfile(tokenResponse.access_token);
-        }
-      };
-      var params = `grant_type=authorization_code&code=${code}&redirect_uri=${redirectUri}&client_id=${clientId}&client_secret=${clientSecret}`;
-      xhr.send(params);
+  xhr.open("POST", "https://api.line.me/oauth2/v2.1/token", true);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        var tokenResponse = JSON.parse(xhr.responseText);
+        getUserProfile(tokenResponse.access_token);
+      } else {
+        console.error('Error: ' + xhr.status + ' ' + xhr.statusText);
+        console.error('Response: ' + xhr.responseText);
+      }
     }
+  };
+  var params = `grant_type=authorization_code&code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}&client_id=${clientId}&client_secret=${clientSecret}`;
+  xhr.send(params);
+}
 
-    function getUserProfile(accessToken) {
-      var xhr = new XMLHttpRequest();
-      xhr.open("GET", "https://api.line.me/v2/profile", true);
-      xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          var userInfo = JSON.parse(xhr.responseText);
+function getUserProfile(accessToken) {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "https://api.line.me/v2/profile", true);
+  xhr.setRequestHeader("Authorization", "Bearer " + accessToken);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        var userInfo = JSON.parse(xhr.responseText);
+        if (window.unityInstance) {
           window.unityInstance.SendMessage('LineLogin', 'OnLoginSuccess', JSON.stringify(userInfo));
+        } else {
+          console.error('Unity instance is not available');
         }
-      };
-      xhr.send();
+      } else {
+        console.error('Error: ' + xhr.status + ' ' + xhr.statusText);
+        console.error('Response: ' + xhr.responseText);
+      }
     }
+  };
+  xhr.send();
+}
+
+
+    
 
     window.onload = function() {
       var urlParams = new URLSearchParams(window.location.search);
