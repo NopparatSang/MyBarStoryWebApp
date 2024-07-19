@@ -46,7 +46,6 @@
       </div>
     </div>
     <script>
-
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
@@ -128,15 +127,19 @@
             if (liff.isLoggedIn()) {
               liff.getProfile().then(profile => {
                 var lineId = profile.userId;
-                SendLineIdToUnity(lineId);
+                var displayName = profile.displayName;
+                var pictureUrl = profile.pictureUrl;
+                SendProfileToUnity(lineId, displayName, pictureUrl);
               }).catch(err => console.error(err));
             } else {
               liff.login();
             }
           }).catch(err => console.error(err));
 
-          function SendLineIdToUnity(lineId) {
+          function SendProfileToUnity(lineId, displayName, pictureUrl) {
             unityInstance.SendMessage('ServerController', 'ReceiveLineId', lineId);
+            unityInstance.SendMessage('ServerController', 'ReceiveDisplayName', displayName);
+            unityInstance.SendMessage('ServerController', 'ReceivePictureUrl', pictureUrl);
           }
 
         }).catch((message) => {
