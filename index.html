@@ -121,20 +121,38 @@
           };
 
           // Initialize LIFF
-          liff.init({
-            liffId: "2005527635-7q5ZpWbz" // Replace with your LIFF ID
-          }).then(() => {
-            if (liff.isLoggedIn()) {
-              liff.getProfile().then(profile => {
-                var lineId = profile.userId;
-                var displayName = profile.displayName;
-                var pictureUrl = profile.pictureUrl;
-                SendProfileToUnity(lineId, displayName, pictureUrl);
-              }).catch(err => console.error(err));
-            } else {
-              liff.login();
+          let LiffID = "2005527635-7q5ZpWbz"; // Replace with your LIFF ID
+          let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz"; // Replace with your redirect URI
+
+          document.addEventListener("DOMContentLoaded", async function () {
+            try {
+              await liff
+                .init({
+                  liffId: LiffID,
+                  withLoginOnExternalBrowser: true
+                })
+                .then(() => {
+                  liff.ready.then(async () => {
+                    if (liff.isInClient() || liff.isLoggedIn()) {
+                      await liff.getProfile().then(profile => {
+                        var lineId = profile.userId;
+                        var displayName = profile.displayName;
+                        var pictureUrl = profile.pictureUrl;
+                        SendProfileToUnity(lineId, displayName, pictureUrl);
+                      }).catch(err => console.error(err));
+                    } else {
+                      console.log("User is not logged in. Redirecting to login...");
+                      await liff.login({
+                        redirectUri: LiffUrl
+                      });
+                    }
+                  });
+                });
+            } catch (error) {
+              console.error("Error initializing LIFF:", error);
+              alert("Error initializing app. Please try again.");
             }
-          }).catch(err => console.error(err));
+          });
 
           function SendProfileToUnity(lineId, displayName, pictureUrl) {
             unityInstance.SendMessage('ServerController', 'ReceiveLineId', lineId);
