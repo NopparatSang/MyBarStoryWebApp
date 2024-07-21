@@ -136,14 +136,15 @@
     document.addEventListener('click', () => {
       openFullscreen();
       lockOrientation();
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         initializeLiffForMobile();
       } else {
         initializeLiffForPC();
       }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      
     });
 
     createUnityInstance(document.querySelector("#unity-canvas"), {
