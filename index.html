@@ -1,127 +1,166 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Unity WebGL Player | MyBarStory</title>
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <style>
-      body, html {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-      #unity-canvas {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="unity-canvas" tabindex="-1" style="background: #231F20;"></canvas>
-    <script src="Build/TestAPIBuild.loader.js"></script>
-    <script>
-      let unityInstance;
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Unity WebGL Player | MyBarStory</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body, html {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="unity-canvas" tabindex="-1" style="background: #231F20;"></canvas>
+  <script src="Build/TestAPIBuild.loader.js"></script>
+  <script>
+    let unityInstance;
 
-      function openFullscreen() {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen();
-        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-            document.documentElement.mozRequestFullScreen();
-        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
-            document.documentElement.webkitRequestFullscreen();
-        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-            document.documentElement.msRequestFullscreen();
-        }
+    function openFullscreen() {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+        document.documentElement.mozRequestFullScreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+        document.documentElement.msRequestFullscreen();
       }
+    }
 
-      function lockOrientation() {
-        if (screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape')
-                .catch(function(error) {
-                    console.error('Orientation lock failed: ', error);
-                });
-        } else if (screen.lockOrientation) {
-            screen.lockOrientation('landscape');
-        } else if (screen.mozLockOrientation) {
-            screen.mozLockOrientation('landscape');
-        } else if (screen.msLockOrientation) {
-            screen.msLockOrientation('landscape');
+    function lockOrientation() {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function(error) {
+          console.error('Orientation lock failed: ', error);
+        });
+      } else if (screen.lockOrientation) {
+        screen.lockOrientation('landscape');
+      } else if (screen.mozLockOrientation) {
+        screen.mozLockOrientation('landscape');
+      } else if (screen.msLockOrientation) {
+        screen.msLockOrientation('landscape');
+      } else {
+        console.warn('Orientation lock is not supported in this browser.');
+      }
+    }
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      var meta = document.createElement('meta');
+      meta.name = 'viewport';
+      meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+      document.getElementsByTagName('head')[0].appendChild(meta);
+    }
+
+    let LiffID = "2005527635-7q5ZpWbz";
+    let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
+
+    async function initializeLiff() {
+      try {
+        await liff.init({
+          liffId: LiffID, // Use own liffId
+          withLoginOnExternalBrowser: true 
+        });
+
+        if (liff.isInClient() || liff.isLoggedIn()) {
+          await fetchUserProfile();
         } else {
-            console.warn('Orientation lock is not supported in this browser.');
+          console.log("User is not logged in. Redirecting to login...");
+          await liff.login({
+            redirectUri: LiffUrl
+          });
         }
+      } catch (error) {
+        console.error("Error initializing LIFF with advanced method:", error);
+        // Try initializing with the basic method
+        initializeLiffBasic();
       }
+    }
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-      }
+    async function initializeLiffBasic() {
+      try {
+        await liff.init({
+          liffId: LiffID // Use own liffId
+        });
 
-      let LiffID = "2005527635-7q5ZpWbz";
-      let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
-
-      // Initialize LIFF and Unity
-      document.addEventListener("DOMContentLoaded", async function () {
-        try {
-          await liff
-            .init({
-              liffId: LiffID, // Use own liffId
-              withLoginOnExternalBrowser: true 
-            })
-            .then(() => {
-              liff.ready.then(async () => {
-                if (liff.isInClient() || liff.isLoggedIn()) {
-                  await fetchUserProfile();
-                } else {
-                  console.log("User is not logged in. Redirecting to login...");
-                  await liff.login({
-                    redirectUri: LiffUrl
-                  });
-                }
-              });
-            });
-        } catch (error) {
-          console.error("Error initializing LIFF:", error);
-          alert("Error initializing app. Please try again.");
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          const lineId = profile.userId;
+          const displayName = profile.displayName;
+          const pictureUrl = profile.pictureUrl;
+          SendProfileToUnity(lineId, displayName, pictureUrl);
+        } else {
+          liff.login();
         }
-      });
+      } catch (error) {
+        console.error("Error initializing LIFF with basic method:", error);
+        alert("Error initializing app. Please try again.");
+      }
+    }
 
-      function SendProfileToUnity(lineId, displayName, pictureUrl) {
+    async function fetchUserProfile() {
+      try {
+        const profile = await liff.getProfile();
+        const lineId = profile.userId;
+        const displayName = profile.displayName;
+        const pictureUrl = profile.pictureUrl;
+
         if (unityInstance) {
-          unityInstance.SendMessage('ServerController', 'ReceiveLineId', lineId);
-          unityInstance.SendMessage('ServerController', 'ReceiveDisplayName', displayName);
-          unityInstance.SendMessage('ServerController', 'ReceivePictureUrl', pictureUrl);
+          SendProfileToUnity(lineId, displayName, pictureUrl);
         } else {
           console.error("Unity instance is not yet initialized.");
+          // Wait for Unity instance to be ready before sending profile
+          document.addEventListener('unityInstanceReady', () => {
+            SendProfileToUnity(lineId, displayName, pictureUrl);
+          });
         }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
       }
+    }
 
-      document.addEventListener('click', () => {
-          openFullscreen();
-          lockOrientation();
-      });
+    function SendProfileToUnity(lineId, displayName, pictureUrl) {
+      if (unityInstance) {
+        unityInstance.SendMessage('ServerController', 'ReceiveLineId', lineId);
+        unityInstance.SendMessage('ServerController', 'ReceiveDisplayName', displayName);
+        unityInstance.SendMessage('ServerController', 'ReceivePictureUrl', pictureUrl);
+      } else {
+        console.error("Unity instance is not yet initialized.");
+      }
+    }
 
-      createUnityInstance(document.querySelector("#unity-canvas"), {
-        dataUrl: "Build/TestAPIBuild.data",
-        frameworkUrl: "Build/TestAPIBuild.framework.js",
-        codeUrl: "Build/TestAPIBuild.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "MyBarStory",
-        productVersion: "0.1",
-        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
-        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
-      }).then((instance) => {
-        unityInstance = instance;
-      }).catch((error) => {
-        console.error("Error creating Unity instance:", error);
-      });
-    </script>
-  </body>
+    document.addEventListener('click', () => {
+      openFullscreen();
+      lockOrientation();
+    });
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      await initializeLiff();
+    });
+
+    createUnityInstance(document.querySelector("#unity-canvas"), {
+      dataUrl: "Build/TestAPIBuild.data",
+      frameworkUrl: "Build/TestAPIBuild.framework.js",
+      codeUrl: "Build/TestAPIBuild.wasm",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "DefaultCompany",
+      productName: "MyBarStory",
+      productVersion: "0.1",
+    }).then((instance) => {
+      unityInstance = instance;
+      document.dispatchEvent(new Event('unityInstanceReady'));
+    }).catch((error) => {
+      console.error("Error creating Unity instance:", error);
+    });
+  </script>
+</body>
 </html>
