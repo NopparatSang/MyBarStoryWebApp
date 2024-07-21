@@ -22,7 +22,7 @@
 </head>
 <body>
   <canvas id="unity-canvas" tabindex="-1" style="background: #231F20;"></canvas>
-  <script src="Build/TestAPIBuild.loader.js"></script>
+  <script src="Build/WebGLBuild.loader.js"></script>
   <script>
     let unityInstance;
 
@@ -139,12 +139,11 @@
     });
 
     document.addEventListener("DOMContentLoaded", function () {
-      /*if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         initializeLiffForMobile();
       } else {
         initializeLiffForPC();
-      }*/
-      initializeLiffForPC();
+      }
     });
 
     createUnityInstance(document.querySelector("#unity-canvas"), {
