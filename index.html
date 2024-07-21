@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Unity WebGL Player | MyBarStory</title>
-  <script src="https://static.line-scdn.net/liff/edge/versions/2.19.1/sdk.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body, html {
       width: 100%;
@@ -64,68 +64,65 @@
     let LiffID = "2005527635-7q5ZpWbz";
     let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
 
-    async function initializeLiff() {
-      try {
-        await liff.init({
-          liffId: LiffID, // Use own liffId
-          withLoginOnExternalBrowser: true 
+    function initializeLiff() {
+      liff.init({
+        liffId: LiffID, // Use own liffId
+        withLoginOnExternalBrowser: true 
+      }).then(() => {
+        liff.ready.then(() => {
+          if (liff.isInClient() || liff.isLoggedIn()) {
+            fetchUserProfile();
+          } else {
+            console.log("User is not logged in. Redirecting to login...");
+            liff.login({
+              redirectUri: LiffUrl
+            });
+          }
         });
-
-        if (liff.isInClient() || liff.isLoggedIn()) {
-          await fetchUserProfile();
-        } else {
-          console.log("User is not logged in. Redirecting to login...");
-          await liff.login({
-            redirectUri: LiffUrl
-          });
-        }
-      } catch (error) {
+      }).catch((error) => {
         console.error("Error initializing LIFF with advanced method:", error);
         // Try initializing with the basic method
         initializeLiffBasic();
-      }
+      });
     }
 
-    async function initializeLiffBasic() {
-      try {
-        await liff.init({
-          liffId: LiffID // Use own liffId
-        });
-
+    function initializeLiffBasic() {
+      liff.init({
+        liffId: LiffID // Use own liffId
+      }).then(() => {
         if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          const lineId = profile.userId;
-          const displayName = profile.displayName;
-          const pictureUrl = profile.pictureUrl;
-          SendProfileToUnity(lineId, displayName, pictureUrl);
+          liff.getProfile().then((profile) => {
+            var lineId = profile.userId;
+            var displayName = profile.displayName;
+            var pictureUrl = profile.pictureUrl;
+            SendProfileToUnity(lineId, displayName, pictureUrl);
+          }).catch((err) => console.error(err));
         } else {
           liff.login();
         }
-      } catch (error) {
+      }).catch((error) => {
         console.error("Error initializing LIFF with basic method:", error);
         alert("Error initializing app. Please try again.");
-      }
+      });
     }
 
-    async function fetchUserProfile() {
-      try {
-        const profile = await liff.getProfile();
-        const lineId = profile.userId;
-        const displayName = profile.displayName;
-        const pictureUrl = profile.pictureUrl;
+    function fetchUserProfile() {
+      liff.getProfile().then((profile) => {
+        var lineId = profile.userId;
+        var displayName = profile.displayName;
+        var pictureUrl = profile.pictureUrl;
 
         if (unityInstance) {
           SendProfileToUnity(lineId, displayName, pictureUrl);
         } else {
           console.error("Unity instance is not yet initialized.");
-          // Wait for Unity instance to be ready before sending profile
           document.addEventListener('unityInstanceReady', () => {
             SendProfileToUnity(lineId, displayName, pictureUrl);
           });
         }
-      } catch (error) {
+      }).catch((error) => {
         console.error("Error fetching user profile:", error);
-      }
+      });
     }
 
     function SendProfileToUnity(lineId, displayName, pictureUrl) {
@@ -143,8 +140,8 @@
       lockOrientation();
     });
 
-    document.addEventListener("DOMContentLoaded", async function () {
-      await initializeLiff();
+    document.addEventListener("DOMContentLoaded", function () {
+      initializeLiff();
     });
 
     createUnityInstance(document.querySelector("#unity-canvas"), {
