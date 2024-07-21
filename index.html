@@ -1,165 +1,176 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Unity WebGL Player | MyBarStory</title>
-  <script src="https://static.line-scdn.net/liff/edge/versions/2.19.1/sdk.js"></script>
-  <style>
-    body, html {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    #unity-canvas {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="unity-canvas" tabindex="-1" style="background: #231F20;"></canvas>
-  <script src="Build/WebGLBuild.loader.js"></script>
-  <script>
-    let unityInstance;
-
-    function openFullscreen() {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-        document.documentElement.mozRequestFullScreen();
-      } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
-        document.documentElement.webkitRequestFullscreen();
-      } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-        document.documentElement.msRequestFullscreen();
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | MyBarStory</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <script src="https://static.line-scdn.net/liff/edge/versions/2.19.1/sdk.js"></script>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
       }
-    }
-
-    function lockOrientation() {
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function(error) {
-          console.error('Orientation lock failed: ', error);
-        });
-      } else if (screen.lockOrientation) {
-        screen.lockOrientation('landscape');
-      } else if (screen.mozLockOrientation) {
-        screen.mozLockOrientation('landscape');
-      } else if (screen.msLockOrientation) {
-        screen.msLockOrientation('landscape');
-      } else {
-        console.warn('Orientation lock is not supported in this browser.');
+      #unity-container {
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: black;
       }
-    }
+      #unity-canvas {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width="1600" height="900" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"></div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">MyBarStory</div>
+      </div>
+    </div>
+    <script>
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
 
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      var meta = document.createElement('meta');
-      meta.name = 'viewport';
-      meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-      document.getElementsByTagName('head')[0].appendChild(meta);
-    }
-
-    let LiffID = "2005527635-7q5ZpWbz";
-    let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
-
-    function initializeLiffForPC() {
-      liff.init({
-        liffId: LiffID
-      }).then(() => {
-        if (liff.isLoggedIn()) {
-          liff.getProfile().then((profile) => {
-            var lineId = profile.userId;
-            var displayName = profile.displayName;
-            var pictureUrl = profile.pictureUrl;
-            SendProfileToUnity(lineId, displayName, pictureUrl);
-          }).catch((err) => console.error(err));
-        } else {
-          liff.login();
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
         }
-      }).catch((error) => {
-        console.error("Error initializing LIFF for PC:", error);
-        alert("Error initializing app. Please try again.");
-      });
-    }
-
-    async function initializeLiffForMobile() {
-      try {
-        await liff.init({
-          liffId: LiffID,
-          withLoginOnExternalBrowser: true
-        });
-        if (liff.isInClient() || liff.isLoggedIn()) {
-          await fetchUserProfile();
-        } else {
-          console.log("User is not logged in. Redirecting to login...");
-          await liff.login({
-            redirectUri: LiffUrl
-          });
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
         }
-      } catch (error) {
-        console.error("Error initializing LIFF for mobile:", error);
-        alert("Error initializing app. Please try again.");
+        updateBannerVisibility();
       }
-    }
 
-    function fetchUserProfile() {
-      liff.getProfile().then((profile) => {
-        var lineId = profile.userId;
-        var displayName = profile.displayName;
-        var pictureUrl = profile.pictureUrl;
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebGLBuild.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/WebGLBuild.data",
+        frameworkUrl: buildUrl + "/WebGLBuild.framework.js",
+        codeUrl: buildUrl + "/WebGLBuild.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "MyBarStory",
+        productVersion: "0.1",
+        showBanner: unityShowBanner,
+      };
 
-        if (unityInstance) {
-          SendProfileToUnity(lineId, displayName, pictureUrl);
-        } else {
-          console.error("Unity instance is not yet initialized.");
-          document.addEventListener('unityInstanceReady', () => {
-            SendProfileToUnity(lineId, displayName, pictureUrl);
-          });
-        }
-      }).catch((error) => {
-        console.error("Error fetching user profile:", error);
-      });
-    }
-
-    function SendProfileToUnity(lineId, displayName, pictureUrl) {
-      if (unityInstance) {
-        unityInstance.SendMessage('ServerController', 'ReceiveLineId', lineId);
-        unityInstance.SendMessage('ServerController', 'ReceiveDisplayName', displayName);
-        unityInstance.SendMessage('ServerController', 'ReceivePictureUrl', pictureUrl);
-      } else {
-        console.error("Unity instance is not yet initialized.");
+      function onMobile() {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+        screen.orientation.lock('landscape').catch(console.error);
+        document.documentElement.requestFullscreen().catch(console.error);
       }
-    }
 
-    document.addEventListener('click', () => {
-      openFullscreen();
-      lockOrientation();
-    });
+      function onDesktop() {
+        canvas.style.width = "100%";
+        canvas.style.height = "100%";
+        document.documentElement.requestFullscreen().catch(console.error);
+      }
 
-    document.addEventListener("DOMContentLoaded", function () {
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        initializeLiffForMobile();
+        onMobile();
       } else {
-        initializeLiffForPC();
+        onDesktop();
       }
-    });
 
-    createUnityInstance(document.querySelector("#unity-canvas"), {
-      dataUrl: "Build/WebGLBuild.data",
-      frameworkUrl: "Build/WebGLBuild.framework.js",
-      codeUrl: "Build/WebGLBuild.wasm",
-      streamingAssetsUrl: "StreamingAssets",
-      companyName: "DefaultCompany",
-      productName: "MyBarStory",
-      productVersion: "0.1",
-    }).then((instance) => {
-      unityInstance = instance;
-      document.dispatchEvent(new Event('unityInstanceReady'));
-    }).catch((error) => {
-      console.error("Error creating Unity instance:", error);
-    });
-  </script>
-</body>
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+          fullscreenButton.onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+
+          // Initialize LIFF
+          let LiffID = "2005527635-7q5ZpWbz"; // Replace with your LIFF ID
+          let LiffUrl = "https://my-bar-story-web-app.vercel.app/"; // Replace with your redirect URL
+
+          document.addEventListener("DOMContentLoaded", async function () {
+            try {
+              await liff.init({
+                liffId: LiffID,
+                withLoginOnExternalBrowser: true
+              }).then(() => {
+                liff.ready.then(async () => {
+                  if (liff.isInClient() || liff.isLoggedIn()) {
+                    await fetchUserProfile();
+                  } else {
+                    console.log("User is not logged in. Redirecting to login...");
+                    await liff.login({
+                      redirectUri: LiffUrl
+                    });
+                  }
+                });
+              });
+            } catch (error) {
+              console.error("Error initializing LIFF:", error);
+              alert("Error initializing app. Please try again.");
+            }
+          });
+
+          async function fetchUserProfile() {
+            try {
+              const profile = await liff.getProfile();
+              const lineId = profile.userId;
+              const displayName = profile.displayName;
+              const pictureUrl = profile.pictureUrl;
+              SendProfileToUnity(lineId, displayName, pictureUrl);
+            } catch (error) {
+              console.error("Error fetching profile:", error);
+            }
+          }
+
+          function SendProfileToUnity(lineId, displayName, pictureUrl) {
+            unityInstance.SendMessage('ServerController', 'ReceiveLineId', lineId);
+            unityInstance.SendMessage('ServerController', 'ReceiveDisplayName', displayName);
+            unityInstance.SendMessage('ServerController', 'ReceivePictureUrl', pictureUrl);
+          }
+
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+
+      document.body.appendChild(script);
+    </script>
+  </body>
 </html>
