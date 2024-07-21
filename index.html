@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Unity WebGL Player | MyBarStory</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/versions/2.19.1/sdk.js"></script>
   <style>
     body, html {
       width: 100%;
@@ -64,31 +64,9 @@
     let LiffID = "2005527635-7q5ZpWbz";
     let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
 
-    function initializeLiff() {
+    function initializeLiffForPC() {
       liff.init({
-        liffId: LiffID, // Use own liffId
-        withLoginOnExternalBrowser: true 
-      }).then(() => {
-        liff.ready.then(() => {
-          if (liff.isInClient() || liff.isLoggedIn()) {
-            fetchUserProfile();
-          } else {
-            console.log("User is not logged in. Redirecting to login...");
-            liff.login({
-              redirectUri: LiffUrl
-            });
-          }
-        });
-      }).catch((error) => {
-        console.error("Error initializing LIFF with advanced method:", error);
-        // Try initializing with the basic method
-        initializeLiffBasic();
-      });
-    }
-
-    function initializeLiffBasic() {
-      liff.init({
-        liffId: LiffID // Use own liffId
+        liffId: LiffID
       }).then(() => {
         if (liff.isLoggedIn()) {
           liff.getProfile().then((profile) => {
@@ -101,9 +79,29 @@
           liff.login();
         }
       }).catch((error) => {
-        console.error("Error initializing LIFF with basic method:", error);
+        console.error("Error initializing LIFF for PC:", error);
         alert("Error initializing app. Please try again.");
       });
+    }
+
+    async function initializeLiffForMobile() {
+      try {
+        await liff.init({
+          liffId: LiffID,
+          withLoginOnExternalBrowser: true
+        });
+        if (liff.isInClient() || liff.isLoggedIn()) {
+          await fetchUserProfile();
+        } else {
+          console.log("User is not logged in. Redirecting to login...");
+          await liff.login({
+            redirectUri: LiffUrl
+          });
+        }
+      } catch (error) {
+        console.error("Error initializing LIFF for mobile:", error);
+        alert("Error initializing app. Please try again.");
+      }
     }
 
     function fetchUserProfile() {
@@ -141,7 +139,11 @@
     });
 
     document.addEventListener("DOMContentLoaded", function () {
-      initializeLiff();
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        initializeLiffForMobile();
+      } else {
+        initializeLiffForPC();
+      }
     });
 
     createUnityInstance(document.querySelector("#unity-canvas"), {
