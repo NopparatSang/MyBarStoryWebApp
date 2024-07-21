@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Unity WebGL Player | MyBarStory</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2.19.1/sdk.js"></script>
   <style>
     body, html {
       width: 100%;
@@ -144,7 +144,7 @@
     });
 
     document.addEventListener("DOMContentLoaded", async function () {
-      await initializeLiff();
+      await initializeLiffBasic();//initializeLiff();
     });
 
     createUnityInstance(document.querySelector("#unity-canvas"), {
