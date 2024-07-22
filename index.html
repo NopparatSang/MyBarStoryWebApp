@@ -26,32 +26,37 @@
   <script>
     let unityInstance;
 
-    function openFullscreen() {
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-        document.documentElement.mozRequestFullScreen();
-      } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
-        document.documentElement.webkitRequestFullscreen();
-      } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-        document.documentElement.msRequestFullscreen();
+    function openFullscreenAndLockOrientation() {
+      function openFullscreen() {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+          document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
+          document.documentElement.webkitRequestFullscreen();
+        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+          document.documentElement.msRequestFullscreen();
+        }
       }
-    }
 
-    function lockOrientation() {
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function(error) {
-          console.error('Orientation lock failed: ', error);
-        });
-      } else if (screen.lockOrientation) {
-        screen.lockOrientation('landscape');
-      } else if (screen.mozLockOrientation) {
-        screen.mozLockOrientation('landscape');
-      } else if (screen.msLockOrientation) {
-        screen.msLockOrientation('landscape');
-      } else {
-        console.warn('Orientation lock is not supported in this browser.');
+      function lockOrientation() {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function(error) {
+            console.error('Orientation lock failed: ', error);
+          });
+        } else if (screen.lockOrientation) {
+          screen.lockOrientation('landscape');
+        } else if (screen.mozLockOrientation) {
+          screen.mozLockOrientation('landscape');
+        } else if (screen.msLockOrientation) {
+          screen.msLockOrientation('landscape');
+        } else {
+          console.warn('Orientation lock is not supported in this browser.');
+        }
       }
+
+      openFullscreen();
+      setTimeout(lockOrientation, 1000); // Delay to ensure fullscreen is applied before locking orientation
     }
 
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
@@ -61,8 +66,8 @@
       document.getElementsByTagName('head')[0].appendChild(meta);
     }
 
-    let LiffID = "2005527635-7q5ZpWbz";
-    let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
+    let LiffID = "2002643017-r2g8zwR0";
+    let LiffUrl = "https://liff.line.me/2002643017-r2g8zwR0";
 
     function initializeLiffForPC() {
       liff.init({
@@ -133,10 +138,7 @@
       }
     }
 
-    document.addEventListener('click', () => {
-      openFullscreen();
-      lockOrientation();
-    });
+    document.addEventListener('click', openFullscreenAndLockOrientation);
 
     document.addEventListener("DOMContentLoaded", function () {
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
