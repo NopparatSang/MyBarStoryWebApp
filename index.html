@@ -50,24 +50,33 @@
   <script>
     let unityInstance;
     let profileDataQueue = [];
-    function enterFullscreenAndLockOrientation() {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen().then(() => {
-              if (screen.orientation && screen.orientation.lock) {
-                  screen.orientation.lock('landscape').catch(err => {
-                      console.error('Error locking orientation:', err);
-                  });
-              } else {
-                  console.warn('Orientation lock is not supported by this browser.');
-              }
-          }).catch(err => {
-              console.error('Error attempting to enable full-screen mode:', err);
-          });
-      } else {
-          console.warn('Fullscreen API is not supported by this browser.');
-      }
-    }
-    function onMobile() {
+
+    function enterFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(console.error);
+            }
+        }
+
+        function enterLockOrientation() {
+            screen.orientation.lock('landscape').catch(console.error);
+        }
+
+        function setupFullscreenAndOrientation() {
+            document.addEventListener('click', () => {
+                enterFullscreen();
+            });
+
+            document.addEventListener('touchstart', () => {
+                enterFullscreen();
+                enterLockOrientation();
+            });
+            document.addEventListener('keydown', () => {
+                enterFullscreen();
+                enterLockOrientation();
+            });
+        }
+
+        function onMobile() {
             var meta = document.createElement('meta');
             meta.name = 'viewport';
             meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
@@ -80,9 +89,9 @@
             canvas.style.top = "0";
             canvas.style.left = "0";
 
-            // เรียกใช้ฟังก์ชันเปิดโหมดเต็มหน้าจอและล็อคแนวนอนเมื่อมีการคลิกที่เอกสาร
-            document.addEventListener('click', enterFullscreenAndLockOrientation);
+            setupFullscreenAndOrientation();
         }
+
         function onDesktop() {
             var canvas = document.getElementById('unity-canvas');
             canvas.style.width = "100vw";
@@ -91,14 +100,7 @@
             canvas.style.top = "0";
             canvas.style.left = "0";
 
-            // เรียกใช้ฟังก์ชันเปิดโหมดเต็มหน้าจอและล็อคแนวนอนเมื่อมีการคลิกที่เอกสาร
-            document.addEventListener('click', enterFullscreenAndLockOrientation);
-        }
-        // ตรวจสอบว่าเป็นอุปกรณ์มือถือหรือไม่
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            onMobile();
-        } else {
-            onDesktop();
+            setupFullscreenAndOrientation();
         }
 
     let LiffID = "2002643017-r2g8zwR0";
@@ -172,9 +174,6 @@
         console.error("Unity instance is not yet initialized.");
       }
     }
-
-    //document.addEventListener('click', openFullscreenAndLockOrientation);
-
     document.addEventListener("DOMContentLoaded", function () {
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         initializeLiffForMobile();
