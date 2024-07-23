@@ -78,7 +78,7 @@
       }
 
       openFullscreen();
-      setTimeout(lockOrientation, 1000); // Delay to ensure fullscreen is applied before locking orientation
+      lockOrientation();
     }
 
     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
