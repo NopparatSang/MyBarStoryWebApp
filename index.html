@@ -23,6 +23,23 @@
     function openWindow(url) {
       window.open(url, '_blank');
     }
+
+    function shareContent(title, text, url) {
+      if (navigator.share) {
+        navigator.share({
+          title: title,
+          text: text,
+          url: url
+        }).then(() => {
+          console.log('Successful share');
+        }).catch((error) => {
+          console.error('Error sharing:', error);
+        });
+      } else {
+        // Fallback for browsers that do not support Web Share API
+        openUrl(url);
+      }
+    }
   </script>
 </head>
 <body>
