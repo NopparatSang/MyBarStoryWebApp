@@ -6,18 +6,20 @@
   <title>MyBarStory</title>
   <script src="https://static.line-scdn.net/liff/edge/versions/2.19.1/sdk.js"></script>
   <style>
-    body, html {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    #unity-canvas {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-    }
+    body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            text-align: center;
+        }
+        canvas {
+            background: #231F20;
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
   </style>
   <script>
     function openWindow(url) {
@@ -48,46 +50,46 @@
   <script>
     let unityInstance;
     let profileDataQueue = [];
+    function enterFullscreenAndLockOrientation() {
+            // เปิดโหมดเต็มหน้าจอ
+            document.documentElement.requestFullscreen().catch(console.error);
 
-    function openFullscreenAndLockOrientation() {
-      function openFullscreen() {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen();
-        } else if (document.documentElement.mozRequestFullScreen) { // Firefox
-          document.documentElement.mozRequestFullScreen();
-        } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari and Opera
-          document.documentElement.webkitRequestFullscreen();
-        } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
-          document.documentElement.msRequestFullscreen();
+            // ล็อคหน้าจอเป็นแนวนอน
+            screen.orientation.lock('landscape').catch(console.error);
+    }
+    function onMobile() {
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+            document.getElementsByTagName('head')[0].appendChild(meta);
+
+            var canvas = document.getElementById('unity-canvas');
+            canvas.style.width = "100vw";
+            canvas.style.height = "100vh";
+            canvas.style.position = "absolute";
+            canvas.style.top = "0";
+            canvas.style.left = "0";
+
+            // เรียกใช้ฟังก์ชันเปิดโหมดเต็มหน้าจอและล็อคแนวนอนเมื่อมีการคลิกที่เอกสาร
+            document.addEventListener('click', enterFullscreenAndLockOrientation);
         }
-      }
+        function onDesktop() {
+            var canvas = document.getElementById('unity-canvas');
+            canvas.style.width = "100vw";
+            canvas.style.height = "100vh";
+            canvas.style.position = "absolute";
+            canvas.style.top = "0";
+            canvas.style.left = "0";
 
-      function lockOrientation() {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(function(error) {
-            console.error('Orientation lock failed: ', error);
-          });
-        } else if (screen.lockOrientation) {
-          screen.lockOrientation('landscape');
-        } else if (screen.mozLockOrientation) {
-          screen.mozLockOrientation('landscape');
-        } else if (screen.msLockOrientation) {
-          screen.msLockOrientation('landscape');
+            // เรียกใช้ฟังก์ชันเปิดโหมดเต็มหน้าจอและล็อคแนวนอนเมื่อมีการคลิกที่เอกสาร
+            document.addEventListener('click', enterFullscreenAndLockOrientation);
+        }
+        // ตรวจสอบว่าเป็นอุปกรณ์มือถือหรือไม่
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            onMobile();
         } else {
-          console.warn('Orientation lock is not supported in this browser.');
+            onDesktop();
         }
-      }
-
-      openFullscreen();
-      lockOrientation();
-    }
-
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-      var meta = document.createElement('meta');
-      meta.name = 'viewport';
-      meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-      document.getElementsByTagName('head')[0].appendChild(meta);
-    }
 
     let LiffID = "2002643017-r2g8zwR0";
     let LiffUrl = "https://liff.line.me/2002643017-r2g8zwR0";
