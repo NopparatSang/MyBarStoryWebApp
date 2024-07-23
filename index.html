@@ -47,6 +47,7 @@
   <script src="Build/WebGLBuild.loader.js"></script>
   <script>
     let unityInstance;
+    let profileDataQueue = [];
 
     function openFullscreenAndLockOrientation() {
       function openFullscreen() {
@@ -100,7 +101,7 @@
             var lineId = profile.userId;
             var displayName = profile.displayName;
             var pictureUrl = profile.pictureUrl;
-            SendProfileToUnity(lineId, displayName, pictureUrl);
+            queueOrSendProfileToUnity(lineId, displayName, pictureUrl);
           }).catch((err) => console.error(err));
         } else {
           liff.login();
@@ -136,18 +137,18 @@
         var lineId = profile.userId;
         var displayName = profile.displayName;
         var pictureUrl = profile.pictureUrl;
-
-        if (unityInstance) {
-          SendProfileToUnity(lineId, displayName, pictureUrl);
-        } else {
-          console.error("Unity instance is not yet initialized.");
-          document.addEventListener('unityInstanceReady', () => {
-            SendProfileToUnity(lineId, displayName, pictureUrl);
-          });
-        }
+        queueOrSendProfileToUnity(lineId, displayName, pictureUrl);
       }).catch((error) => {
         console.error("Error fetching user profile:", error);
       });
+    }
+
+    function queueOrSendProfileToUnity(lineId, displayName, pictureUrl) {
+      if (unityInstance) {
+        SendProfileToUnity(lineId, displayName, pictureUrl);
+      } else {
+        profileDataQueue.push({ lineId, displayName, pictureUrl });
+      }
     }
 
     function SendProfileToUnity(lineId, displayName, pictureUrl) {
@@ -180,7 +181,10 @@
       productVersion: "0.1",
     }).then((instance) => {
       unityInstance = instance;
-      document.dispatchEvent(new Event('unityInstanceReady'));
+      profileDataQueue.forEach(profile => {
+        SendProfileToUnity(profile.lineId, profile.displayName, profile.pictureUrl);
+      });
+      profileDataQueue = [];
     }).catch((error) => {
       console.error("Error creating Unity instance:", error);
     });
