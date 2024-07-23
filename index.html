@@ -51,11 +51,21 @@
     let unityInstance;
     let profileDataQueue = [];
     function enterFullscreenAndLockOrientation() {
-            // เปิดโหมดเต็มหน้าจอ
-            document.documentElement.requestFullscreen().catch(console.error);
-
-            // ล็อคหน้าจอเป็นแนวนอน
-            screen.orientation.lock('landscape').catch(console.error);
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().then(() => {
+              if (screen.orientation && screen.orientation.lock) {
+                  screen.orientation.lock('landscape').catch(err => {
+                      console.error('Error locking orientation:', err);
+                  });
+              } else {
+                  console.warn('Orientation lock is not supported by this browser.');
+              }
+          }).catch(err => {
+              console.error('Error attempting to enable full-screen mode:', err);
+          });
+      } else {
+          console.warn('Fullscreen API is not supported by this browser.');
+      }
     }
     function onMobile() {
             var meta = document.createElement('meta');
