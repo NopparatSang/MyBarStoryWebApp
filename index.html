@@ -189,14 +189,15 @@
           //SendProfileToUnity(profile.lineId, profile.displayName, profile.pictureUrl);
         //});
         //profileDataQueue = [];
-      }).catch((error) => {
-        console.error("Error creating Unity instance:", error);
-      });
+        
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         initializeLiffForMobile();
       } else {
         initializeLiffForPC();
       }
+      }).catch((error) => {
+        console.error("Error creating Unity instance:", error);
+      });
     });
 
     
