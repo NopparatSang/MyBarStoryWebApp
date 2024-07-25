@@ -7,19 +7,32 @@
   <script src="https://static.line-scdn.net/liff/edge/versions/2.19.1/sdk.js"></script>
   <style>
     body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            text-align: center;
-        }
-        canvas {
-            background: #231F20;
-            width: 100vw;
-            height: 100vh;
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      text-align: center;
+    }
+    canvas {
+      background: #231F20;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    #orientation-warning {
+      display: none;
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      font-size: 24px;
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+    }
   </style>
   <script>
     function openWindow(url) {
@@ -39,69 +52,59 @@
         });
       } else {
         // Fallback for browsers that do not support Web Share API
-        openUrl(url);
+        openWindow(url);
       }
     }
-  </script>
-</head>
-<body>
-  <canvas id="unity-canvas" tabindex="-1" style="background: #231F20;"></canvas>
-  <script src="Build/WebGLBuild.loader.js"></script>
-  <script>
-    let unityInstance;
-    let profileDataQueue = [];
 
-    function enterFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(console.error);
-            }
+    function adjustCanvasSize() {
+      const canvas = document.getElementById('unity-canvas');
+      canvas.style.width = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+    }
+
+    function showOrientationWarning(show) {
+      const warning = document.getElementById('orientation-warning');
+      warning.style.display = show ? 'flex' : 'none';
+    }
+
+    function checkOrientation() {
+      if (window.innerWidth < window.innerHeight) {
+        showOrientationWarning(true);
+      } else {
+        showOrientationWarning(false);
+      }
+    }
+
+    function setupOrientationWarning() {
+      window.addEventListener('resize', checkOrientation);
+      checkOrientation();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      adjustCanvasSize();
+      setupOrientationWarning();
+      window.addEventListener('resize', adjustCanvasSize);
+
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        dataUrl: "Build/WebGLBuild.data",
+        frameworkUrl: "Build/WebGLBuild.framework.js",
+        codeUrl: "Build/WebGLBuild.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "MyBarStory",
+        productVersion: "0.1",
+      }).then((instance) => {
+        unityInstance = instance;
+
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          initializeLiffForMobile();
+        } else {
+          initializeLiffForPC();
         }
-
-        function enterLockOrientation() {
-            screen.orientation.lock('landscape').catch(console.error);
-        }
-
-        function setupFullscreenAndOrientation() {
-            document.addEventListener('click', () => {
-                enterFullscreen();
-            });
-
-            document.addEventListener('touchstart', () => {
-                enterFullscreen();
-                enterLockOrientation();
-            });
-            document.addEventListener('keydown', () => {
-                enterFullscreen();
-                enterLockOrientation();
-            });
-        }
-
-        function onMobile() {
-            var meta = document.createElement('meta');
-            meta.name = 'viewport';
-            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-            document.getElementsByTagName('head')[0].appendChild(meta);
-
-            var canvas = document.getElementById('unity-canvas');
-            canvas.style.width = "100vw";
-            canvas.style.height = "100vh";
-            canvas.style.position = "absolute";
-            canvas.style.top = "0";
-            canvas.style.left = "0";
-
-            setupFullscreenAndOrientation();
-        }
-
-        function onDesktop() {
-            var canvas = document.getElementById('unity-canvas');
-            canvas.style.width = "100vw";
-            canvas.style.height = "100vh";
-            canvas.style.position = "absolute";
-            canvas.style.top = "0";
-            canvas.style.left = "0";
-
-            setupFullscreenAndOrientation();
-        }
+      }).catch((error) => {
+        console.error("Error creating Unity instance:", error);
+      });
+    });
 
     let LiffID = "2002643017-r2g8zwR0";
     let LiffUrl = "https://liff.line.me/2002643017-r2g8zwR0";
@@ -174,33 +177,11 @@
         console.error("Unity instance is not yet initialized.");
       }
     }
-    document.addEventListener("DOMContentLoaded", function () {
-        createUnityInstance(document.querySelector("#unity-canvas"), {
-        dataUrl: "Build/WebGLBuild.data",
-        frameworkUrl: "Build/WebGLBuild.framework.js",
-        codeUrl: "Build/WebGLBuild.wasm",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "MyBarStory",
-        productVersion: "0.1",
-      }).then((instance) => {
-        unityInstance = instance;
-        //profileDataQueue.forEach(profile => {
-          //SendProfileToUnity(profile.lineId, profile.displayName, profile.pictureUrl);
-        //});
-        //profileDataQueue = [];
-        
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        initializeLiffForMobile();
-      } else {
-        initializeLiffForPC();
-      }
-      }).catch((error) => {
-        console.error("Error creating Unity instance:", error);
-      });
-    });
-
-    
   </script>
+</head>
+<body>
+  <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <div id="orientation-warning">กรุณาหมุนหน้าจอเป็นแนวนอนเพื่อใช้งาน</div>
+  <script src="Build/WebGLBuild.loader.js"></script>
 </body>
 </html>
