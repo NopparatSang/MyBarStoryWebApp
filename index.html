@@ -175,6 +175,23 @@
       }
     }
     document.addEventListener("DOMContentLoaded", function () {
+        createUnityInstance(document.querySelector("#unity-canvas"), {
+        dataUrl: "Build/WebGLBuild.data",
+        frameworkUrl: "Build/WebGLBuild.framework.js",
+        codeUrl: "Build/WebGLBuild.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "MyBarStory",
+        productVersion: "0.1",
+      }).then((instance) => {
+        unityInstance = instance;
+        //profileDataQueue.forEach(profile => {
+          //SendProfileToUnity(profile.lineId, profile.displayName, profile.pictureUrl);
+        //});
+        //profileDataQueue = [];
+      }).catch((error) => {
+        console.error("Error creating Unity instance:", error);
+      });
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         initializeLiffForMobile();
       } else {
@@ -182,23 +199,7 @@
       }
     });
 
-    createUnityInstance(document.querySelector("#unity-canvas"), {
-      dataUrl: "Build/WebGLBuild.data",
-      frameworkUrl: "Build/WebGLBuild.framework.js",
-      codeUrl: "Build/WebGLBuild.wasm",
-      streamingAssetsUrl: "StreamingAssets",
-      companyName: "DefaultCompany",
-      productName: "MyBarStory",
-      productVersion: "0.1",
-    }).then((instance) => {
-      unityInstance = instance;
-      profileDataQueue.forEach(profile => {
-        SendProfileToUnity(profile.lineId, profile.displayName, profile.pictureUrl);
-      });
-      profileDataQueue = [];
-    }).catch((error) => {
-      console.error("Error creating Unity instance:", error);
-    });
+    
   </script>
 </body>
 </html>
