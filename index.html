@@ -17,6 +17,8 @@
       position: absolute;
       top: 0;
       left: 0;
+      width: 100vw;
+      height: 100vh;
     }
     #orientation-warning {
       display: none;
@@ -56,10 +58,32 @@
       }
     }
 
-    function adjustCanvasSize() {
-      const canvas = document.getElementById('unity-canvas');
-      canvas.style.width = window.innerWidth + 'px';
-      canvas.style.height = window.innerHeight + 'px';
+    function enterFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(console.error);
+      }
+    }
+
+    function lockOrientation() {
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(console.error);
+      }
+    }
+
+    function setupFullscreenAndOrientation() {
+      document.addEventListener('click', () => {
+        enterFullscreen();
+      });
+
+      document.addEventListener('touchstart', () => {
+        enterFullscreen();
+        lockOrientation();
+      });
+
+      document.addEventListener('keydown', () => {
+        enterFullscreen();
+        lockOrientation();
+      });
     }
 
     function showOrientationWarning(show) {
@@ -81,9 +105,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      adjustCanvasSize();
+      setupFullscreenAndOrientation();
       setupOrientationWarning();
-      window.addEventListener('resize', adjustCanvasSize);
 
       createUnityInstance(document.querySelector("#unity-canvas"), {
         dataUrl: "Build/WebGLBuild.data",
