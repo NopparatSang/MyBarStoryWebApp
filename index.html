@@ -20,6 +20,39 @@
       width: 100vw;
       height: 100vh;
     }
+    #loading-screen {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    #loading-logo {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 20px;
+    }
+    #progress-bar {
+      width: 80%;
+      height: 30px;
+      background: #555;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    #progress {
+      width: 0;
+      height: 100%;
+      background: #4CAF50;
+      border-radius: 15px;
+      transition: width 0.3s;
+    }
     #orientation-warning {
       display: none;
       position: absolute;
@@ -71,7 +104,6 @@
           console.error('Error sharing:', error);
         });
       } else {
-        // Fallback for browsers that do not support Web Share API
         openWindow(url);
       }
     }
@@ -134,8 +166,13 @@
         companyName: "DefaultCompany",
         productName: "MyBarStory",
         productVersion: "0.1",
+        onProgress: (unityInstance, progress) => {
+          document.getElementById('progress').style.width = (progress * 100) + '%';
+        }
       }).then((instance) => {
         unityInstance = instance;
+
+        document.getElementById('loading-screen').style.display = 'none';
 
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
           initializeLiffForMobile();
@@ -222,6 +259,12 @@
 </head>
 <body>
   <canvas id="unity-canvas" tabindex="-1"></canvas>
+  <div id="loading-screen">
+    <img id="loading-logo" src="images/logo.png" alt="Loading Logo">
+    <div id="progress-bar">
+      <div id="progress"></div>
+    </div>
+  </div>
   <div id="orientation-warning">
     <img id="rotation-icon" src="images/rotation-icon.svg" alt="Rotate Icon">
     Rotate Your Screen
