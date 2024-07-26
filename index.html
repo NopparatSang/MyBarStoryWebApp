@@ -75,6 +75,7 @@
     function openWindow(url) {
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
         // Use window.location.href for mobile devices
+       // navigator.openWindow(url);
         window.location.href = url;
       } else {
         // Use window.open for non-mobile devices
