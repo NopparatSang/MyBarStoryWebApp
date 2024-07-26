@@ -172,22 +172,30 @@
 
     async function initializeLiff() {
       try {
-        await liff.init({
-          liffId: LiffID,
-          withLoginOnExternalBrowser: true
-        });
-
-        if (liff.isInClient() || liff.isLoggedIn()) {
-          await fetchUserProfile();
-          startUnity();
-        } else {
-          liff.login();
-        }
+        await liff
+          .init({
+            liffId: LiffID, // Use own liffId
+            withLoginOnExternalBrowser: true 
+          })
+          .then(() => {
+            liff.ready.then(async () => {
+              if (liff.isInClient() || liff.isLoggedIn()) {
+                await fetchUserProfile();
+                startUnity();
+              } else {
+                console.log("User is not logged in. Redirecting to login...");
+                await liff.login({
+                  redirectUri: LiffUrl
+                });
+              }
+            });
+          });
       } catch (error) {
         console.error("Error initializing LIFF:", error);
         alert("Error initializing app. Please try again.");
       }
     }
+    
 
     async function fetchUserProfile() {
       try {
