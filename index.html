@@ -111,7 +111,7 @@
     }
 
     function enterFullscreen() {
-      if (!document.fullscreenElement) {
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(console.error);
       }
     }
@@ -123,19 +123,23 @@
     }
 
     function setupFullscreenAndOrientation() {
-      document.addEventListener('click', () => {
-        enterFullscreen();
-      });
+      if (document.documentElement.requestFullscreen && screen.orientation && screen.orientation.lock) {
+        document.addEventListener('click', () => {
+          enterFullscreen();
+        });
 
-      document.addEventListener('touchstart', () => {
-        enterFullscreen();
-        lockOrientation();
-      });
+        document.addEventListener('touchstart', () => {
+          enterFullscreen();
+          lockOrientation();
+        });
 
-      document.addEventListener('keydown', () => {
-        enterFullscreen();
-        lockOrientation();
-      });
+        document.addEventListener('keydown', () => {
+          enterFullscreen();
+          lockOrientation();
+        });
+      } else {
+        console.warn('Fullscreen or orientation lock is not supported on this device.');
+      }
     }
 
     function showOrientationWarning(show) {
@@ -172,30 +176,22 @@
 
     async function initializeLiff() {
       try {
-        await liff
-          .init({
-            liffId: LiffID, // Use own liffId
-            withLoginOnExternalBrowser: true 
-          })
-          .then(() => {
-            liff.ready.then(async () => {
-              if (liff.isInClient() || liff.isLoggedIn()) {
-                await fetchUserProfile();
-                startUnity();
-              } else {
-                console.log("User is not logged in. Redirecting to login...");
-                await liff.login({
-                  redirectUri: LiffUrl
-                });
-              }
-            });
-          });
+        await liff.init({
+          liffId: LiffID,
+          withLoginOnExternalBrowser: true
+        });
+
+        if (liff.isInClient() || liff.isLoggedIn()) {
+          await fetchUserProfile();
+          startUnity();
+        } else {
+          liff.login();
+        }
       } catch (error) {
         console.error("Error initializing LIFF:", error);
         alert("Error initializing app. Please try again.");
       }
     }
-    
 
     async function fetchUserProfile() {
       try {
@@ -226,7 +222,6 @@
           progressBarFull.style.width = 100 * progress + '%';
         }
       }).then((instance) => {
-        progressBarFull.style.width = 100 + '%';
         console.log("Unity instance created successfully."); // Debugging
         loadingScreen.style.display = 'none';
         unityInstance = instance;
@@ -237,13 +232,15 @@
 
       // Fake loading bar update
       let progress = 0;
+      const updateInterval = 2000; // Interval time in milliseconds
+      const progressIncrement = 15; // Percentage increment per interval
       const interval = setInterval(() => {
-        progress += 8;
+        progress += progressIncrement;
         progressBarFull.style.width = progress + '%';
-        if (progress >= 90) {
+        if (progress >= 100) {
           clearInterval(interval);
         }
-      }, 2300);
+      }, updateInterval);
     }
 
     function sendProfileToUnity() {
