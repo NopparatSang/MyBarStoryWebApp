@@ -173,9 +173,11 @@
         productName: "MyBarStory",
         productVersion: "0.1",
         onProgress: function(unityInstance, progress) {
+          console.log("Progress:", progress); // Debugging
           progressBarFull.style.width = 100 * progress + '%';
         }
       }).then((unityInstance) => {
+        console.log("Unity instance created successfully."); // Debugging
         loadingScreen.style.display = 'none';
 
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
@@ -186,6 +188,16 @@
       }).catch((error) => {
         console.error("Error creating Unity instance:", error);
       });
+
+      // Fake loading bar update
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 15;
+        progressBarFull.style.width = progress + '%';
+        if (progress >= 100) {
+          clearInterval(interval);
+        }
+      }, 2000);
     });
 
     let LiffID = "2002643017-r2g8zwR0";
