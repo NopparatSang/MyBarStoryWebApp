@@ -38,23 +38,7 @@
       height: 150px;
       margin-bottom: 20px;
     }
-    #progress-bar {
-      width: 80%;
-      height: 30px;
-      background: #555;
-      border-radius: 15px;
-      overflow: hidden;
-      margin-top: 20px;
-    }
-    #progress {
-      width: 0;
-      height: 100%;
-      background: #4CAF50;
-      border-radius: 15px;
-      transition: width 0.3s;
-    }
     #orientation-warning {
-      display: none;
       position: absolute;
       width: 100vw;
       height: 100vh;
@@ -68,6 +52,7 @@
       align-items: center;
       display: flex;
       flex-direction: column;
+      z-index: 1100;
     }
     #rotation-icon {
       width: 100px;
@@ -166,9 +151,6 @@
         companyName: "DefaultCompany",
         productName: "MyBarStory",
         productVersion: "0.1",
-        onProgress: (unityInstance, progress) => {
-          document.getElementById('progress').style.width = (progress * 100) + '%';
-        }
       }).then((instance) => {
         unityInstance = instance;
 
@@ -259,15 +241,12 @@
 </head>
 <body>
   <canvas id="unity-canvas" tabindex="-1"></canvas>
-  <div id="loading-screen">
-    <img id="loading-logo" src="images/logo.png" alt="Loading Logo">
-    <div id="progress-bar">
-      <div id="progress"></div>
-    </div>
-  </div>
   <div id="orientation-warning">
     <img id="rotation-icon" src="images/rotation-icon.svg" alt="Rotate Icon">
     Rotate Your Screen
+  </div>
+  <div id="loading-screen">
+    <img id="loading-logo" src="images/logo.png" alt="Loading Logo">
   </div>
   <script src="Build/WebGLBuild.loader.js"></script>
 </body>
