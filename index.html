@@ -73,7 +73,13 @@
   </style>
   <script>
     function openWindow(url) {
-      window.open(url, '_blank');
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Use window.location.href for mobile devices
+        window.location.href = url;
+      } else {
+        // Use window.open for non-mobile devices
+        window.open(url, '_blank');
+      }
     }
 
     function shareContent(title, text, url) {
@@ -245,7 +251,7 @@
     Rotate Your Screen
   </div>
   <div id="loading-screen">
-    <img id="loading-logo" src="images/logo.jpg" alt="Loading Logo">
+    <img id="loading-logo" src="images/logo.png" alt="Loading Logo">
   </div>
   <script src="Build/WebGLBuild.loader.js"></script>
 </body>
