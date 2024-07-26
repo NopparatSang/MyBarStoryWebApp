@@ -226,6 +226,7 @@
           progressBarFull.style.width = 100 * progress + '%';
         }
       }).then((instance) => {
+        progressBarFull.style.width = 100 + '%';
         console.log("Unity instance created successfully."); // Debugging
         loadingScreen.style.display = 'none';
         unityInstance = instance;
@@ -237,12 +238,12 @@
       // Fake loading bar update
       let progress = 0;
       const interval = setInterval(() => {
-        progress += 15;
+        progress += 8;
         progressBarFull.style.width = progress + '%';
-        if (progress >= 100) {
+        if (progress >= 90) {
           clearInterval(interval);
         }
-      }, 2000);
+      }, 2300);
     }
 
     function sendProfileToUnity() {
