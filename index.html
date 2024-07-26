@@ -164,9 +164,11 @@
       initializeLiff();
     });
 
-    // Test Link
-    let LiffID = "2005527635-7q5ZpWbz";
-    let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
+    let LiffID = "2002643017-r2g8zwR0";
+    let LiffUrl = "https://liff.line.me/2002643017-r2g8zwR0";
+
+    let userProfile = { lineId: '', displayName: '', pictureUrl: '' };
+    let unityInstance;
 
     async function initializeLiff() {
       try {
@@ -190,16 +192,13 @@
     async function fetchUserProfile() {
       try {
         const profile = await liff.getProfile();
-        const lineId = profile.userId;
-        const displayName = profile.displayName;
-        const pictureUrl = profile.pictureUrl;
-        sendProfileToUnity(lineId, displayName, pictureUrl);
+        userProfile.lineId = profile.userId;
+        userProfile.displayName = profile.displayName;
+        userProfile.pictureUrl = profile.pictureUrl;
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
     }
-
-    let unityInstance;
 
     function startUnity() {
       const canvas = document.querySelector("#unity-canvas");
@@ -218,9 +217,11 @@
           console.log("Progress:", progress); // Debugging
           progressBarFull.style.width = 100 * progress + '%';
         }
-      }).then((unityInstance) => {
+      }).then((instance) => {
         console.log("Unity instance created successfully."); // Debugging
         loadingScreen.style.display = 'none';
+        unityInstance = instance;
+        sendProfileToUnity();
       }).catch((error) => {
         console.error("Error creating Unity instance:", error);
       });
@@ -230,17 +231,17 @@
       const interval = setInterval(() => {
         progress += 15;
         progressBarFull.style.width = progress + '%';
-        if (progress >= 90) {
+        if (progress >= 100) {
           clearInterval(interval);
         }
       }, 2000);
     }
 
-    function sendProfileToUnity(lineId, displayName, pictureUrl) {
+    function sendProfileToUnity() {
       if (unityInstance) {
-        unityInstance.SendMessage('ServerController', 'ReceiveLineId', lineId);
-        unityInstance.SendMessage('ServerController', 'ReceiveDisplayName', displayName);
-        unityInstance.SendMessage('ServerController', 'ReceivePictureUrl', pictureUrl);
+        unityInstance.SendMessage('ServerController', 'ReceiveLineId', userProfile.lineId);
+        unityInstance.SendMessage('ServerController', 'ReceiveDisplayName', userProfile.displayName);
+        unityInstance.SendMessage('ServerController', 'ReceivePictureUrl', userProfile.pictureUrl);
       } else {
         console.error("Unity instance is not yet initialized.");
       }
