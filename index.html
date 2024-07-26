@@ -39,15 +39,18 @@
     #rotation-icon {
       width: 50px;
       height: 50px;
-      margin-top: 20px;
+      margin-bottom: 20px;
       animation: rotate 2s linear infinite;
     }
     @keyframes rotate {
-      0% {
+      0%, 100% {
         transform: rotate(0deg);
       }
-      100% {
-        transform: rotate(360deg);
+      25% {
+        transform: rotate(-45deg);
+      }
+      75% {
+        transform: rotate(45deg);
       }
     }
   </style>
@@ -220,8 +223,8 @@
 <body>
   <canvas id="unity-canvas" tabindex="-1"></canvas>
   <div id="orientation-warning">
-    Rotate Your Screen
     <img id="rotation-icon" src="images/rotation-icon.svg" alt="Rotate Icon">
+    Rotate Your Screen
   </div>
   <script src="Build/WebGLBuild.loader.js"></script>
 </body>
