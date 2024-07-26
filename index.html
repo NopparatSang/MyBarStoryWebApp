@@ -31,11 +31,25 @@
       align-items: center;
       justify-content: center;
       z-index: 1000;
+      flex-direction: column;
     }
     #loading-logo {
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+    #progress-bar {
+      width: 80%;
+      background-color: #555;
+      height: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    #progress {
+      width: 0;
+      height: 100%;
+      background-color: #4CAF50;
+      border-radius: 10px;
     }
     #orientation-warning {
       position: absolute;
@@ -74,11 +88,8 @@
   <script>
     function openWindow(url) {
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Use window.location.href for mobile devices
-       // navigator.openWindow(url);
         window.location.href = url;
       } else {
-        // Use window.open for non-mobile devices
         window.open(url, '_blank');
       }
     }
@@ -157,6 +168,9 @@
         companyName: "DefaultCompany",
         productName: "MyBarStory",
         productVersion: "0.1",
+        onProgress: function(unityInstance, progress) {
+          document.getElementById('progress').style.width = (progress * 100) + '%';
+        }
       }).then((instance) => {
         unityInstance = instance;
 
@@ -253,6 +267,9 @@
   </div>
   <div id="loading-screen">
     <img id="loading-logo" src="images/logo.jpg" alt="Loading Logo">
+    <div id="progress-bar">
+      <div id="progress"></div>
+    </div>
   </div>
   <script src="Build/WebGLBuild.loader.js"></script>
 </body>
