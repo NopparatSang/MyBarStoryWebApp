@@ -110,11 +110,14 @@
       }
     }
     function canLockOrientation() {
-    return screen.orientation && screen.orientation.lock;
+      return screen.orientation && screen.orientation.lock;
+    }
+    function canEnterFullscreen() {
+      return document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || document.documentElement.mozRequestFullScreen || document.documentElement.msRequestFullscreen;
     }
 
     function enterFullscreen() {
-      if (!document.fullscreenElement) {
+      if (!document.fullscreenElement && canEnterFullscreen) {
         document.documentElement.requestFullscreen().catch(console.error);
       }
     }
@@ -167,7 +170,7 @@
       // Initialize LIFF and handle authentication
       initializeLiff();
     });
-    
+
     // Test Link
     let LiffID = "2005527635-7q5ZpWbz";
     let LiffUrl = "https://liff.line.me/2005527635-7q5ZpWbz";
