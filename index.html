@@ -160,7 +160,11 @@
       setupFullscreenAndOrientation();
       setupOrientationWarning();
 
-      createUnityInstance(document.querySelector("#unity-canvas"), {
+      const canvas = document.querySelector("#unity-canvas");
+      const loadingScreen = document.getElementById('loading-screen');
+      const progressBarFull = document.getElementById('progress');
+
+      createUnityInstance(canvas, {
         dataUrl: "Build/WebGLBuild.data",
         frameworkUrl: "Build/WebGLBuild.framework.js",
         codeUrl: "Build/WebGLBuild.wasm",
@@ -169,12 +173,10 @@
         productName: "MyBarStory",
         productVersion: "0.1",
         onProgress: function(unityInstance, progress) {
-          document.getElementById('progress').style.width = (progress * 100) + '%';
+          progressBarFull.style.width = 100 * progress + '%';
         }
-      }).then((instance) => {
-        unityInstance = instance;
-
-        document.getElementById('loading-screen').style.display = 'none';
+      }).then((unityInstance) => {
+        loadingScreen.style.display = 'none';
 
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
           initializeLiffForMobile();
